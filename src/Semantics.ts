@@ -1,5 +1,5 @@
-import { values } from '@syuilo/aiscript';
-import { Ast } from '@syuilo/aiscript';
+import type { values } from '@syuilo/aiscript';
+import type { Ast } from '@syuilo/aiscript';
 
 export class Semantics {
     private readonly constants: Record<string, values.Value>;

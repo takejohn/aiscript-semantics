@@ -1,6 +1,8 @@
 import type { values } from '@syuilo/aiscript';
 import type { Ast } from '@syuilo/aiscript';
-import { SemanticError } from './SemanticError.ts';
+import type { SemanticError } from './SemanticError.ts';
+import { StaticScope } from './StaticScope.ts';
+import { analyze } from './NodeAnalyzer.ts';
 
 export class Semantics {
     private readonly constants: Map<string, values.Value>;
@@ -10,24 +12,12 @@ export class Semantics {
     }
 
     analyze(ast: Ast.Node[]): AnalysisResult {
-        const variables = new Set<string>(this.constants.keys());
-        const errors: SemanticError[] = [];
-        for (const node of ast) {
-            switch (node.type) {
-                case 'def':
-                    if (variables.has(node.name)) {
-                        errors.push(
-                            new SemanticError(
-                                `Variable '${node.name}' is already defined`,
-                                node,
-                            ),
-                        );
-                    }
-                    variables.add(node.name);
-                    break;
-            }
-        }
-        return { ast, errors };
+        const scope = new StaticScope(this.constants.keys());
+        const analyzedAst = ast.map((node) => analyze(scope, node));
+        return {
+            ast: analyzedAst,
+            errors: scope.errors,
+        };
     }
 }
 

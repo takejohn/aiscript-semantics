@@ -12,5 +12,9 @@ Deno.test('グローバルスコープで同名の変数を定義するとエラ
     const constants = {};
     const result = new Semantics(constants).analyze(ast);
     assertEquals(result.errors.length, 1);
+    assertEquals(
+        result.errors[0].message,
+        "Variable 'x' already exists in scope '<root>'",
+    );
     assertRejects(() => new Interpreter(constants).exec(ast));
 });

@@ -3,6 +3,8 @@ import { SemanticError } from './SemanticError.ts';
 import { BuiltinConstant, type SyntaxObject } from './SyntaxObject.ts';
 
 export class StaticScope {
+    public readonly name = '<root>';
+
     private readonly variables: Map<string, SyntaxObject>;
 
     public readonly errors: SemanticError[] = [];
@@ -22,7 +24,7 @@ export class StaticScope {
         if (variables.has(identifier)) {
             this.errors.push(
                 new SemanticError(
-                    `Variable '${identifier}' is already defined`,
+                    `Variable '${identifier}' already exists in scope '${this.name}'`,
                     node,
                 ),
             );

@@ -1,6 +1,6 @@
 import { assertEquals, assertRejects } from '@std/assert';
 import { Interpreter, Parser } from '@syuilo/aiscript';
-import { Semantics } from './Semantics.ts';
+import { Semantics } from '../src/Semantics.ts';
 
 const source = `
 let x = true

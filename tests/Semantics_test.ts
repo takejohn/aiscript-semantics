@@ -28,4 +28,48 @@ Deno.test('グローバルスコープに存在しない変数を参照すると
         result.errors[0].message,
         "No such variable 'x' in scope '<root>'",
     );
+    assertRejects(() => new Interpreter(constants).exec(ast));
 });
+
+Deno.test('名前空間を使用した場合の変数チェック', () => {
+    assertEquals(
+        analyze(`
+            :: Ns {
+                let a = 1
+            }
+            :: Ns {
+                let a = 2
+            }
+        `).errors.length,
+        1,
+    );
+
+    assertEquals(
+        analyze(`
+            :: Ns {
+                let a = 1
+            }
+            Ns:b
+        `).errors.length,
+        1,
+    );
+
+    assertEquals(
+        analyze(`
+            :: Ns1 {
+                let a = 1
+            }
+            :: Ns2 {
+                let a = 1
+            }
+            let a = 1
+        `).errors.length,
+        0,
+    );
+});
+
+function analyze(source: string) {
+    const ast = new Parser().parse(source);
+    const constants = {};
+    return new Semantics(constants).analyze(ast);
+}

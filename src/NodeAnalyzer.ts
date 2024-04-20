@@ -18,7 +18,7 @@ export function analyze<T extends NodeType>(
 
 export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
     ns(scope: StaticScope, node: Ast.Namespace): Ast.Namespace {
-        // TODO
+        visitNamespace(scope, node);
         return node;
     }
 
@@ -185,3 +185,17 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
         return node;
     }
 }();
+
+function visitNamespace(scope: StaticScope, node: Ast.Namespace, prefix = '') {
+    const newPrefix = prefix + node.name + ':';
+    for (const member of node.members) {
+        switch (member.type) {
+            case 'ns':
+                visitNamespace(scope, member, newPrefix);
+                break;
+            case 'def':
+                scope.addVariable(newPrefix + member.name, member);
+                break;
+        }
+    }
+}

@@ -153,7 +153,7 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
     }
 
     identifier(scope: StaticScope, node: Ast.Identifier): Ast.Identifier {
-        // TODO
+        scope.findVariable(node.name, node);
         return node;
     }
 

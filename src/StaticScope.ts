@@ -5,11 +5,14 @@ import { BuiltinConstant, type SyntaxObject } from './SyntaxObject.ts';
 export class StaticScope {
     public readonly name = '<root>';
 
+    public readonly parent?: StaticScope;
+
     private readonly variables: Map<string, SyntaxObject>;
 
     public readonly errors: SemanticError[] = [];
 
-    constructor(variables: Iterable<string> | null) {
+    constructor(variables: Iterable<string> | null, parent?: StaticScope) {
+        this.parent = parent;
         const variableMap = new Map();
         if (variables != null) {
             for (const variable of variables) {
@@ -34,5 +37,26 @@ export class StaticScope {
                 definition: node,
             });
         }
+    }
+
+    findVariable(
+        identifier: string,
+        node: Ast.Identifier,
+    ): SyntaxObject | undefined {
+        // deno-lint-ignore no-this-alias
+        let scope: StaticScope | undefined = this;
+        while (scope != null) {
+            const result = scope.variables.get(identifier);
+            if (result != null) {
+                return result;
+            }
+            scope = scope.parent;
+        }
+        this.errors.push(
+            new SemanticError(
+                `No such variable '${identifier}' in scope '${this.name}'`,
+                node,
+            ),
+        );
     }
 }

@@ -18,3 +18,14 @@ Deno.test('グローバルスコープで同名の変数を定義するとエラ
     );
     assertRejects(() => new Interpreter(constants).exec(ast));
 });
+
+Deno.test('グローバルスコープに存在しない変数を参照するとエラーが発生すること', () => {
+    const ast = new Parser().parse('x');
+    const constants = {};
+    const result = new Semantics(constants).analyze(ast);
+    assertEquals(result.errors.length, 1);
+    assertEquals(
+        result.errors[0].message,
+        "No such variable 'x' in scope '<root>'",
+    );
+});

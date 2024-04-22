@@ -186,16 +186,18 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
     }
 }();
 
-function visitNamespace(scope: StaticScope, node: Ast.Namespace, prefix = '') {
-    const newPrefix = prefix + node.name + ':';
+function visitNamespace(scope: StaticScope, node: Ast.Namespace) {
+    const nsScope = scope.createChildNamespace(node.name);
+
     for (const member of node.members) {
-        switch (member.type) {
-            case 'ns':
-                visitNamespace(scope, member, newPrefix);
-                break;
-            case 'def':
-                scope.addVariable(newPrefix + member.name, member);
-                break;
+        if (member.type == 'ns') {
+            visitNamespace(nsScope, member);
+        }
+    }
+
+    for (const member of node.members) {
+        if (member.type == 'def') {
+            nsScope.addVariable(member.name, member);
         }
     }
 }

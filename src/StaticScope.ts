@@ -22,6 +22,10 @@ export class StaticScope {
         this.variables = new Map();
     }
 
+    createChildNamespace(name: string): StaticNamespaceScope {
+        return new StaticNamespaceScope(this, name);
+    }
+
     addVariable(identifier: string, node: Ast.Definition): void {
         const variables = this.variables;
         if (variables.has(identifier)) {
@@ -58,5 +62,19 @@ export class StaticScope {
                 node,
             ),
         );
+    }
+}
+
+export class StaticNamespaceScope extends StaticScope {
+    private readonly nsName: string;
+
+    constructor(parent: StaticScope, nsName: string) {
+        super(null, parent);
+        this.nsName = nsName;
+    }
+
+    override addVariable(identifier: string, node: Ast.Definition): void {
+        super.addVariable(identifier, node);
+        this.parent?.addVariable(this.nsName + ':' + identifier, node);
     }
 }

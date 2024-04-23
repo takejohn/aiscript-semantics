@@ -13,7 +13,18 @@ export class Semantics {
 
     analyze(ast: Ast.Node[]): AnalysisResult {
         const scope = new StaticScope(this.constants.keys());
-        const analyzedAst = ast.map((node) => analyze(scope, node));
+        for (const node of ast) {
+            if (node.type == 'ns') {
+                analyze(scope, node);
+            }
+        }
+        const analyzedAst = ast.map((node) => {
+            if (node.type == 'ns') {
+                return node;
+            } else {
+                return analyze(scope, node);
+            }
+        });
         return {
             ast: analyzedAst,
             errors: scope.errors,

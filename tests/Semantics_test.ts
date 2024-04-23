@@ -66,6 +66,16 @@ Deno.test('名前空間を使用した場合の変数チェック', () => {
         `).errors.length,
         0,
     );
+
+    assertEquals(
+        analyze(`
+            Ns:a
+            :: Ns {
+                let a = 1
+            }
+        `).errors.length,
+        0,
+    );
 });
 
 function analyze(source: string) {

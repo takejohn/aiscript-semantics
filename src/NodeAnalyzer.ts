@@ -1,9 +1,9 @@
 import type { Ast } from '@syuilo/aiscript';
 import type { StaticScope } from './StaticScope.ts';
 
-type NodeType = Ast.Node['type'];
+export type NodeType = Ast.Node['type'];
 
-type NodeOfType<T extends NodeType> = Ast.Node & { type: T };
+export type NodeOfType<T extends NodeType> = Ast.Node & { type: T };
 
 export type NodeAnalyzer = {
     [T in NodeType]: (scope: StaticScope, node: NodeOfType<T>) => NodeOfType<T>;

@@ -2,7 +2,7 @@ import type { values } from '@syuilo/aiscript';
 import type { Ast } from '@syuilo/aiscript';
 import type { SemanticError } from './SemanticError.ts';
 import { StaticScope } from './StaticScope.ts';
-import { analyze } from './NodeAnalyzer.ts';
+import { type NodeOfType, analyze } from './NodeAnalyzer.ts';
 
 export class Semantics {
     private readonly constants: Map<string, values.Value>;
@@ -13,14 +13,15 @@ export class Semantics {
 
     analyze(ast: Ast.Node[]): AnalysisResult {
         const scope = new StaticScope(this.constants.keys());
+        const nsResults = new Map<Ast.Node, NodeOfType<'ns'>>();
         for (const node of ast) {
             if (node.type == 'ns') {
-                analyze(scope, node);
+                nsResults.set(node, analyze(scope, node));
             }
         }
         const analyzedAst = ast.map((node) => {
             if (node.type == 'ns') {
-                return node;
+                return nsResults.get(node)!;
             } else {
                 return analyze(scope, node);
             }

@@ -7,185 +7,152 @@ export type NodeType = Ast.Node['type'];
 export type NodeOfType<T extends NodeType> = Ast.Node & { type: T };
 
 export type NodeAnalyzer = {
-    [T in NodeType]: (scope: StaticScope, node: NodeOfType<T>) => NodeOfType<T>;
+    [T in NodeType]: (scope: StaticScope, node: NodeOfType<T>) => void;
 };
 
 export function analyze<T extends NodeType>(
     scope: StaticScope,
     node: NodeOfType<T>,
-): NodeOfType<T> {
-    return NodeAnalyzer[node.type](scope, node);
+): void {
+    NodeAnalyzer[node.type](scope, node);
 }
 
 export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
-    ns(scope: StaticScope, node: Ast.Namespace): Ast.Namespace {
+    ns(scope: StaticScope, node: Ast.Namespace): void {
         visitNamespace(scope, node);
-        return node;
     }
 
-    meta(scope: StaticScope, node: Ast.Meta): Ast.Meta {
+    meta(scope: StaticScope, node: Ast.Meta): void {
         // TODO
-        return node;
     }
 
-    def(scope: StaticScope, node: Ast.Definition): Ast.Definition {
+    def(scope: StaticScope, node: Ast.Definition): void {
         scope.addVariable(node.name, node);
-        return node;
     }
 
-    return(scope: StaticScope, node: Ast.Return): Ast.Return {
+    return(scope: StaticScope, node: Ast.Return): void {
         // TODO
-        return node;
     }
 
-    each(scope: StaticScope, node: Ast.Each): Ast.Each {
+    each(scope: StaticScope, node: Ast.Each): void {
         // TODO
-        return node;
     }
 
-    for(scope: StaticScope, node: Ast.For): Ast.For {
+    for(scope: StaticScope, node: Ast.For): void {
         // TODO
-        return node;
     }
 
-    loop(scope: StaticScope, node: Ast.Loop): Ast.Loop {
+    loop(scope: StaticScope, node: Ast.Loop): void {
         // TODO
-        return node;
     }
 
-    break(scope: StaticScope, node: Ast.Break): Ast.Break {
+    break(scope: StaticScope, node: Ast.Break): void {
         // TODO
-        return node;
     }
 
-    continue(scope: StaticScope, node: Ast.Continue): Ast.Continue {
+    continue(scope: StaticScope, node: Ast.Continue): void {
         // TODO
-        return node;
     }
 
-    addAssign(scope: StaticScope, node: Ast.AddAssign): Ast.AddAssign {
+    addAssign(scope: StaticScope, node: Ast.AddAssign): void {
         // TODO
-        return node;
     }
 
-    subAssign(scope: StaticScope, node: Ast.SubAssign): Ast.SubAssign {
+    subAssign(scope: StaticScope, node: Ast.SubAssign): void {
         // TODO
-        return node;
     }
 
-    assign(scope: StaticScope, node: Ast.Assign): Ast.Assign {
+    assign(scope: StaticScope, node: Ast.Assign): void {
         // TODO
-        return node;
     }
 
-    not(scope: StaticScope, node: Ast.Not): Ast.Not {
+    not(scope: StaticScope, node: Ast.Not): void {
         // TODO
-        return node;
     }
 
-    and(scope: StaticScope, node: Ast.And): Ast.And {
+    and(scope: StaticScope, node: Ast.And): void {
         // TODO
-        return node;
     }
 
-    or(scope: StaticScope, node: Ast.Or): Ast.Or {
+    or(scope: StaticScope, node: Ast.Or): void {
         // TODO
-        return node;
     }
 
-    if(scope: StaticScope, node: Ast.If): Ast.If {
+    if(scope: StaticScope, node: Ast.If): void {
         // TODO
-        return node;
     }
 
-    fn(scope: StaticScope, node: Ast.Fn): Ast.Fn {
+    fn(scope: StaticScope, node: Ast.Fn): void {
         // TODO
-        return node;
     }
 
-    match(scope: StaticScope, node: Ast.Match): Ast.Match {
+    match(scope: StaticScope, node: Ast.Match): void {
         // TODO
-        return node;
     }
 
-    block(scope: StaticScope, node: Ast.Block): Ast.Block {
+    block(scope: StaticScope, node: Ast.Block): void {
         for (const statement of node.statements) {
             analyze(scope, statement);
         }
-        return node;
     }
 
-    exists(scope: StaticScope, node: Ast.Exists): Ast.Exists {
+    exists(scope: StaticScope, node: Ast.Exists): void {
         // TODO
-        return node;
     }
 
-    tmpl(scope: StaticScope, node: Ast.Tmpl): Ast.Tmpl {
+    tmpl(scope: StaticScope, node: Ast.Tmpl): void {
         // TODO
-        return node;
     }
 
-    str(scope: StaticScope, node: Ast.Str): Ast.Str {
+    str(scope: StaticScope, node: Ast.Str): void {
         // TODO
-        return node;
     }
 
-    num(scope: StaticScope, node: Ast.Num): Ast.Num {
+    num(scope: StaticScope, node: Ast.Num): void {
         // TODO
-        return node;
     }
 
-    bool(scope: StaticScope, node: Ast.Bool): Ast.Bool {
+    bool(scope: StaticScope, node: Ast.Bool): void {
         // TODO
-        return node;
     }
 
-    null(scope: StaticScope, node: Ast.Null): Ast.Null {
+    null(scope: StaticScope, node: Ast.Null): void {
         // TODO
-        return node;
     }
 
-    obj(scope: StaticScope, node: Ast.Obj): Ast.Obj {
+    obj(scope: StaticScope, node: Ast.Obj): void {
         // TODO
-        return node;
     }
 
-    arr(scope: StaticScope, node: Ast.Arr): Ast.Arr {
+    arr(scope: StaticScope, node: Ast.Arr): void {
         // TODO
-        return node;
     }
 
-    identifier(scope: StaticScope, node: Ast.Identifier): Ast.Identifier {
+    identifier(scope: StaticScope, node: Ast.Identifier): void {
         scope.findVariable(node.name, node);
-        return node;
     }
 
-    call(scope: StaticScope, node: Ast.Call): Ast.Call {
+    call(scope: StaticScope, node: Ast.Call): void {
         // TODO
-        return node;
     }
 
-    index(scope: StaticScope, node: Ast.Index): Ast.Index {
+    index(scope: StaticScope, node: Ast.Index): void {
         // TODO
-        return node;
     }
 
-    prop(scope: StaticScope, node: Ast.Prop): Ast.Prop {
+    prop(scope: StaticScope, node: Ast.Prop): void {
         // TODO
-        return node;
     }
 
     namedTypeSource(
         scope: StaticScope,
         node: Ast.NamedTypeSource,
-    ): Ast.NamedTypeSource {
+    ): void {
         // TODO
-        return node;
     }
 
-    fnTypeSource(scope: StaticScope, node: Ast.FnTypeSource): Ast.FnTypeSource {
+    fnTypeSource(scope: StaticScope, node: Ast.FnTypeSource): void {
         // TODO
-        return node;
     }
 }();
 

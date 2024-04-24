@@ -1,8 +1,8 @@
 import type { values } from '@syuilo/aiscript';
 import type { Ast } from '@syuilo/aiscript';
 import type { SemanticError } from './SemanticError.ts';
-import { StaticRootScope, StaticScope } from './StaticScope.ts';
-import { analyze, type NodeOfType } from './NodeAnalyzer.ts';
+import { StaticRootScope } from './StaticScope.ts';
+import { analyze } from './NodeAnalyzer.ts';
 
 export class Semantics {
     private readonly constants: Map<string, values.Value>;
@@ -13,27 +13,23 @@ export class Semantics {
 
     analyze(ast: Ast.Node[]): AnalysisResult {
         const scope = new StaticRootScope(this.constants.keys());
-        const nsResults = new Map<Ast.Node, NodeOfType<'ns'>>();
+        const exceptNamespaces: Exclude<Ast.Node, Ast.Namespace>[] = [];
         for (const node of ast) {
             if (node.type == 'ns') {
-                nsResults.set(node, analyze(scope, node));
+                analyze(scope, node);
+            } else {
+                exceptNamespaces.push(node);
             }
         }
-        const analyzedAst = ast.map((node) => {
-            if (node.type == 'ns') {
-                return nsResults.get(node)!;
-            } else {
-                return analyze(scope, node);
-            }
-        });
+        for (const node of exceptNamespaces) {
+            analyze(scope, node);
+        }
         return {
-            ast: analyzedAst,
             errors: scope.errors,
         };
     }
 }
 
 interface AnalysisResult {
-    ast: Ast.Node[];
     errors: SemanticError[];
 }

@@ -2,17 +2,14 @@ import type { Ast } from '@syuilo/aiscript';
 import { SemanticError } from './SemanticError.ts';
 import { BuiltinConstant, type SyntaxObject } from './SyntaxObject.ts';
 
-export class StaticScope {
+export abstract class StaticScope {
     public readonly name = '<root>';
 
     public readonly parent?: StaticScope;
 
     private readonly variables: Map<string, SyntaxObject>;
 
-    public readonly errors: SemanticError[] = [];
-
-    constructor(variables: Iterable<string> | null, parent?: StaticScope) {
-        this.parent = parent;
+    constructor(variables: Iterable<string> | null) {
         const variableMap = new Map();
         if (variables != null) {
             for (const variable of variables) {
@@ -29,7 +26,7 @@ export class StaticScope {
     addVariable(identifier: string, node: Ast.Definition): void {
         const variables = this.variables;
         if (variables.has(identifier)) {
-            this.errors.push(
+            this.addError(
                 new SemanticError(
                     `Variable '${identifier}' already exists in scope '${this.name}'`,
                     node,
@@ -56,16 +53,43 @@ export class StaticScope {
             }
             scope = scope.parent;
         }
-        this.errors.push(
+        this.addError(
             new SemanticError(
                 `No such variable '${identifier}' in scope '${this.name}'`,
                 node,
             ),
         );
     }
+
+    abstract addError(error: SemanticError): void;
 }
 
-export class StaticNamespaceScope extends StaticScope {
+export class StaticRootScope extends StaticScope {
+    constructor(constants: Iterable<string> | null) {
+        super(constants);
+    }
+
+    public readonly errors: SemanticError[] = [];
+
+    addError(error: SemanticError): void {
+        this.errors.push(error);
+    }
+}
+
+export class StaticChildScope extends StaticScope {
+    public readonly parent: StaticScope;
+
+    constructor(variables: Iterable<string> | null, parent: StaticScope) {
+        super(variables);
+        this.parent = parent;
+    }
+
+    addError(error: SemanticError): void {
+        this.parent.addError(error);
+    }
+}
+
+export class StaticNamespaceScope extends StaticChildScope {
     private readonly nsName: string;
 
     constructor(parent: StaticScope, nsName: string) {

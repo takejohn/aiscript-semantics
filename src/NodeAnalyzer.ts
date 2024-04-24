@@ -1,5 +1,6 @@
 import type { Ast } from '@syuilo/aiscript';
 import type { StaticScope } from './StaticScope.ts';
+import { SemanticError } from './SemanticError.ts';
 
 export type NodeType = Ast.Node['type'];
 
@@ -197,6 +198,14 @@ function visitNamespace(scope: StaticScope, node: Ast.Namespace) {
 
     for (const member of node.members) {
         if (member.type == 'def') {
+            if (member.mut) {
+                nsScope.addError(
+                    new SemanticError(
+                        `Namespaces cannot include mutable variable: ${member.name}`,
+                        member,
+                    ),
+                );
+            }
             nsScope.addVariable(member.name, member);
         }
     }

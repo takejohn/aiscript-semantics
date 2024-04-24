@@ -78,6 +78,17 @@ Deno.test('名前空間を使用した場合の変数チェック', () => {
     );
 });
 
+Deno.test('名前空間でミュータブルな値を定義するとエラー', () => {
+    assertEquals(
+        analyze(`
+            :: Ns {
+                var a = 1
+            }
+        `).errors.length,
+        1,
+    );
+});
+
 function analyze(source: string) {
     const ast = new Parser().parse(source);
     const constants = {};

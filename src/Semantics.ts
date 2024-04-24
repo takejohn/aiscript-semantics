@@ -1,8 +1,8 @@
 import type { values } from '@syuilo/aiscript';
 import type { Ast } from '@syuilo/aiscript';
 import type { SemanticError } from './SemanticError.ts';
-import { StaticScope } from './StaticScope.ts';
-import { type NodeOfType, analyze } from './NodeAnalyzer.ts';
+import { StaticRootScope, StaticScope } from './StaticScope.ts';
+import { analyze, type NodeOfType } from './NodeAnalyzer.ts';
 
 export class Semantics {
     private readonly constants: Map<string, values.Value>;
@@ -12,7 +12,7 @@ export class Semantics {
     }
 
     analyze(ast: Ast.Node[]): AnalysisResult {
-        const scope = new StaticScope(this.constants.keys());
+        const scope = new StaticRootScope(this.constants.keys());
         const nsResults = new Map<Ast.Node, NodeOfType<'ns'>>();
         for (const node of ast) {
             if (node.type == 'ns') {

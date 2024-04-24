@@ -89,6 +89,10 @@ Deno.test('名前空間でミュータブルな値を定義するとエラー', 
     );
 });
 
+Deno.test('ブロック内のエラー', () => {
+    assertEquals(analyze('eval { x }').errors.length, 1);
+});
+
 function analyze(source: string) {
     const ast = new Parser().parse(source);
     const constants = {};

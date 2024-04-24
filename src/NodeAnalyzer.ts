@@ -109,7 +109,9 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
     }
 
     block(scope: StaticScope, node: Ast.Block): Ast.Block {
-        // TODO
+        for (const statement of node.statements) {
+            analyze(scope, statement);
+        }
         return node;
     }
 

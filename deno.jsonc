@@ -2,11 +2,15 @@
     "name": "@takejohn/aiscript-semantics",
     "version": "0.0.1",
     "exports": "./mod.ts",
+    "tasks": {
+        "test": "deno test --coverage && deno coverage --html"
+    },
     "imports": {
         "@std/assert": "jsr:@std/assert@^0.221.0",
         "@syuilo/aiscript": "npm:@syuilo/aiscript@^0.17.0"
     },
     "fmt": {
+        "exclude": ["coverage"],
         "indentWidth": 4,
         "singleQuote": true
     }

@@ -41,15 +41,20 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
     }
 
     each(scope: StaticScope, node: Ast.Each): void {
+        analyze(scope, node.items);
         const innerScope = scope.createChild();
         innerScope.addVariable(node.var, node);
-        analyze(innerScope, node.items);
+        analyze(innerScope, node.for);
     }
 
     for(scope: StaticScope, node: Ast.For): void {
         const innerScope = scope.createChild();
-        if (node.var != null) {
-            innerScope.addVariable(node.var, node);
+        if (node.times) {
+            analyze(scope, node.times);
+        } else {
+            analyze(scope, node.from!);
+            analyze(scope, node.to!);
+            innerScope.addVariable(node.var!, node);
         }
         analyze(innerScope, node.for);
     }
@@ -98,13 +103,21 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
     if(scope: StaticScope, node: Ast.If): void {
         analyze(scope, node.cond);
         analyze(scope.createChild(), node.then);
+        for (const { cond, then } of node.elseif) {
+            analyze(scope, cond);
+            analyze(scope.createChild(), then);
+        }
         if (node.else != null) {
             analyze(scope.createChild(), node.else);
         }
     }
 
     fn(scope: StaticScope, node: Ast.Fn): void {
-        analyzeEach(scope.createChild(), node.children);
+        const innerScope = scope.createChild();
+        for (const arg of node.args) {
+            innerScope.addVariable(arg.name, node);
+        }
+        analyzeEach(innerScope, node.children);
     }
 
     match(scope: StaticScope, node: Ast.Match): void {
@@ -222,7 +235,7 @@ function analyzeAssignmentDestination(
         case 'identifier': {
             const name = node.name;
             const definition = scope.findVariable(name, node);
-            if (definition != null && definition.mutable) {
+            if (definition != null && !definition.mutable) {
                 scope.addError(
                     new SemanticError(
                         `Cannot assign to an immutable variable ${name}.`,

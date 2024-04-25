@@ -191,15 +191,12 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
         analyze(scope, node.target);
     }
 
-    namedTypeSource(
-        scope: StaticScope,
-        node: Ast.NamedTypeSource,
-    ): void {
-        // TODO
+    namedTypeSource(): void {
+        throw new Error('invalid node type');
     }
 
-    fnTypeSource(scope: StaticScope, node: Ast.FnTypeSource): void {
-        // TODO
+    fnTypeSource(): void {
+        throw new Error('invalid node type');
     }
 }();
 

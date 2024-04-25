@@ -1,6 +1,10 @@
 import type { Ast } from '@syuilo/aiscript';
 import { SemanticError } from './SemanticError.ts';
-import { BuiltinConstant, type SyntaxObject } from './SyntaxObject.ts';
+import {
+    BuiltinConstant,
+    type DefinitionNode,
+    type SyntaxObject,
+} from './SyntaxObject.ts';
 
 export abstract class StaticScope {
     public readonly name = '<root>';
@@ -19,11 +23,15 @@ export abstract class StaticScope {
         this.variables = new Map();
     }
 
+    createChild(): StaticChildScope {
+        return new StaticChildScope(null, this);
+    }
+
     createChildNamespace(name: string): StaticNamespaceScope {
         return new StaticNamespaceScope(this, name);
     }
 
-    addVariable(identifier: string, node: Ast.Definition): void {
+    addVariable(identifier: string, node: DefinitionNode): void {
         const variables = this.variables;
         if (variables.has(identifier)) {
             this.addError(
@@ -36,6 +44,7 @@ export abstract class StaticScope {
             variables.set(identifier, {
                 name: identifier,
                 definition: node,
+                mutable: node.type == 'def' && node.mut,
             });
         }
     }

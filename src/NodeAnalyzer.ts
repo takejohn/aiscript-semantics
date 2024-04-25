@@ -17,13 +17,19 @@ export function analyze<T extends NodeType>(
     NodeAnalyzer[node.type](scope, node);
 }
 
+export function analyzeEach(scope: StaticScope, nodes: Ast.Node[]): void {
+    for (const node of nodes) {
+        analyze(scope, node);
+    }
+}
+
 export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
     ns(scope: StaticScope, node: Ast.Namespace): void {
         visitNamespace(scope, node);
     }
 
     meta(scope: StaticScope, node: Ast.Meta): void {
-        // TODO
+        analyze(scope, node.value);
     }
 
     def(scope: StaticScope, node: Ast.Definition): void {
@@ -31,63 +37,83 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
     }
 
     return(scope: StaticScope, node: Ast.Return): void {
-        // TODO
+        analyze(scope, node.expr);
     }
 
     each(scope: StaticScope, node: Ast.Each): void {
-        // TODO
+        const innerScope = scope.createChild();
+        innerScope.addVariable(node.var, node);
+        analyze(innerScope, node.items);
     }
 
     for(scope: StaticScope, node: Ast.For): void {
-        // TODO
+        const innerScope = scope.createChild();
+        if (node.var != null) {
+            innerScope.addVariable(node.var, node);
+        }
+        analyze(innerScope, node.for);
     }
 
     loop(scope: StaticScope, node: Ast.Loop): void {
-        // TODO
+        analyzeEach(scope.createChild(), node.statements);
     }
 
-    break(scope: StaticScope, node: Ast.Break): void {
-        // TODO
+    break(): void {
+        // ignore
     }
 
-    continue(scope: StaticScope, node: Ast.Continue): void {
-        // TODO
+    continue(): void {
+        // ignore
     }
 
     addAssign(scope: StaticScope, node: Ast.AddAssign): void {
-        // TODO
+        analyzeAssignmentDestination(scope, node.dest);
+        analyze(scope, node.expr);
     }
 
     subAssign(scope: StaticScope, node: Ast.SubAssign): void {
-        // TODO
+        analyzeAssignmentDestination(scope, node.dest);
+        analyze(scope, node.expr);
     }
 
     assign(scope: StaticScope, node: Ast.Assign): void {
-        // TODO
+        analyzeAssignmentDestination(scope, node.dest);
+        analyze(scope, node.expr);
     }
 
     not(scope: StaticScope, node: Ast.Not): void {
-        // TODO
+        analyze(scope, node.expr);
     }
 
     and(scope: StaticScope, node: Ast.And): void {
-        // TODO
+        analyze(scope, node.left);
+        analyze(scope, node.right);
     }
 
     or(scope: StaticScope, node: Ast.Or): void {
-        // TODO
+        analyze(scope, node.left);
+        analyze(scope, node.right);
     }
 
     if(scope: StaticScope, node: Ast.If): void {
-        // TODO
+        analyze(scope, node.cond);
+        analyze(scope.createChild(), node.then);
+        if (node.else != null) {
+            analyze(scope.createChild(), node.else);
+        }
     }
 
     fn(scope: StaticScope, node: Ast.Fn): void {
-        // TODO
+        analyzeEach(scope.createChild(), node.children);
     }
 
     match(scope: StaticScope, node: Ast.Match): void {
-        // TODO
+        analyze(scope, node.about);
+        const innerScope = scope.createChild();
+        for (const qa of node.qs) {
+            analyze(innerScope, qa.q);
+            analyze(innerScope, qa.a);
+        }
     }
 
     block(scope: StaticScope, node: Ast.Block): void {
@@ -96,36 +122,42 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
         }
     }
 
-    exists(scope: StaticScope, node: Ast.Exists): void {
-        // TODO
+    exists(): void {
+        // ignore
     }
 
     tmpl(scope: StaticScope, node: Ast.Tmpl): void {
-        // TODO
+        for (const expr of node.tmpl) {
+            if (typeof expr != 'string') {
+                analyze(scope, expr);
+            }
+        }
     }
 
     str(scope: StaticScope, node: Ast.Str): void {
-        // TODO
+        // ignore
     }
 
     num(scope: StaticScope, node: Ast.Num): void {
-        // TODO
+        // ignore
     }
 
     bool(scope: StaticScope, node: Ast.Bool): void {
-        // TODO
+        // ignore
     }
 
     null(scope: StaticScope, node: Ast.Null): void {
-        // TODO
+        // ignore
     }
 
     obj(scope: StaticScope, node: Ast.Obj): void {
-        // TODO
+        for (const value of node.value.values()) {
+            analyze(scope, value);
+        }
     }
 
     arr(scope: StaticScope, node: Ast.Arr): void {
-        // TODO
+        analyzeEach(scope, node.value);
     }
 
     identifier(scope: StaticScope, node: Ast.Identifier): void {
@@ -133,15 +165,17 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
     }
 
     call(scope: StaticScope, node: Ast.Call): void {
-        // TODO
+        analyze(scope, node.target);
+        analyzeEach(scope, node.args);
     }
 
     index(scope: StaticScope, node: Ast.Index): void {
-        // TODO
+        analyze(scope, node.target);
+        analyze(scope, node.index);
     }
 
     prop(scope: StaticScope, node: Ast.Prop): void {
-        // TODO
+        analyze(scope, node.target);
     }
 
     namedTypeSource(
@@ -177,5 +211,39 @@ function visitNamespace(scope: StaticScope, node: Ast.Namespace) {
             }
             nsScope.addVariable(member.name, member);
         }
+    }
+}
+
+function analyzeAssignmentDestination(
+    scope: StaticScope,
+    node: Ast.Node,
+): void {
+    switch (node.type) {
+        case 'identifier': {
+            const name = node.name;
+            const definition = scope.findVariable(name, node);
+            if (definition != null && definition.mutable) {
+                scope.addError(
+                    new SemanticError(
+                        `Cannot assign to an immutable variable ${name}.`,
+                        node,
+                    ),
+                );
+            }
+            break;
+        }
+        case 'index':
+        case 'prop':
+        case 'arr':
+        case 'obj':
+            analyze(scope, node);
+            break;
+        default:
+            scope.addError(
+                new SemanticError(
+                    'The left-hand side of an assignment expression must be a variable or a property/index access.',
+                    node,
+                ),
+            );
     }
 }

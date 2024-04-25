@@ -1,6 +1,7 @@
 import { assertEquals, assertRejects } from '@std/assert';
 import { Interpreter, Parser } from '@syuilo/aiscript';
 import { Semantics } from '../src/Semantics.ts';
+import { analyze, countErrors } from './testUtils_test.ts';
 
 const source = `
 let x = true
@@ -361,13 +362,3 @@ Deno.test('関数呼び出し', () => {
 
     assertEquals(countErrors('f()'), 1);
 });
-
-function analyze(source: string) {
-    const ast = new Parser().parse(source);
-    const constants = {};
-    return new Semantics(constants).analyze(ast);
-}
-
-function countErrors(source: string) {
-    return analyze(source).errors.length;
-}

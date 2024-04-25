@@ -5,6 +5,8 @@ import {
     type DefinitionNode,
     type SyntaxObject,
 } from './SyntaxObject.ts';
+import { std } from './lib/std.ts';
+import { io } from './lib/io.ts';
 
 export abstract class StaticScope {
     public readonly name = '<root>';
@@ -20,7 +22,7 @@ export abstract class StaticScope {
                 variableMap.set(variable, new BuiltinConstant(variable));
             }
         }
-        this.variables = new Map();
+        this.variables = variableMap;
     }
 
     createChild(): StaticChildScope {
@@ -75,7 +77,7 @@ export abstract class StaticScope {
 
 export class StaticRootScope extends StaticScope {
     constructor(constants: Iterable<string> | null) {
-        super(constants);
+        super((constants ? Array.from(constants) : []).concat(std, io));
     }
 
     public readonly errors: SemanticError[] = [];

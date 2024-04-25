@@ -3,7 +3,7 @@
     "version": "0.0.1",
     "exports": "./mod.ts",
     "tasks": {
-        "test": "rm coverage/*.json && deno test --coverage && deno coverage --html"
+        "test": "deno test --coverage && deno coverage --html"
     },
     "imports": {
         "@std/assert": "jsr:@std/assert@^0.221.0",

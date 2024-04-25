@@ -147,19 +147,19 @@ export const NodeAnalyzer: NodeAnalyzer = new class implements NodeAnalyzer {
         }
     }
 
-    str(scope: StaticScope, node: Ast.Str): void {
+    str(): void {
         // ignore
     }
 
-    num(scope: StaticScope, node: Ast.Num): void {
+    num(): void {
         // ignore
     }
 
-    bool(scope: StaticScope, node: Ast.Bool): void {
+    bool(): void {
         // ignore
     }
 
-    null(scope: StaticScope, node: Ast.Null): void {
+    null(): void {
         // ignore
     }
 
